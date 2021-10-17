@@ -12,4 +12,9 @@ public class Creature extends Thing {
         this.world.put(this, xPos, yPos);
     }
 
+    public void moveFromTo(int px, int py,int xPos, int yPos){
+        this.world.put(this, xPos, yPos);
+        this.world.put(new Trajectory(this.world),px,py);
+    }
+
 }

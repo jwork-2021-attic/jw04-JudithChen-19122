@@ -6,7 +6,7 @@ public class Thing {
 
     protected World world;
 
-    public Tile<? extends Thing> tile;
+    public Tile<? extends Thing> tile; //只能是Tile<x> 其中x为thing或thing的子类
 
     public int getX() {
         return this.tile.getxPos();

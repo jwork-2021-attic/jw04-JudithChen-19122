@@ -3,63 +3,56 @@ package com.anish.screen;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 
-import com.anish.calabashbros.BubbleSorter;
 import com.anish.calabashbros.Calabash;
 import com.anish.calabashbros.World;
+import com.anish.calabashbros.MazeGenerator;
+import com.anish.calabashbros.Wall;
+import com.anish.calabashbros.Guide;
 
 import asciiPanel.AsciiPanel;
 
 public class WorldScreen implements Screen {
 
     private World world;
-    private Calabash[] bros;
-    String[] sortSteps;
+    private Calabash bro;
+    private int[][] maze;
+    String[] moveSteps;
+    private Wall wall;
 
     public WorldScreen() {
         world = new World();
 
-        bros = new Calabash[7];
+        wall = new Wall(world);
+        MazeGenerator mazeGenerator = new MazeGenerator(40);
+        mazeGenerator.generateMaze();
+        maze=mazeGenerator.getmaze();
 
-        bros[3] = new Calabash(new Color(204, 0, 0), 1, world);
-        bros[5] = new Calabash(new Color(255, 165, 0), 2, world);
-        bros[1] = new Calabash(new Color(252, 233, 79), 3, world);
-        bros[0] = new Calabash(new Color(78, 154, 6), 4, world);
-        bros[4] = new Calabash(new Color(50, 175, 255), 5, world);
-        bros[6] = new Calabash(new Color(114, 159, 207), 6, world);
-        bros[2] = new Calabash(new Color(173, 127, 168), 7, world);
-
-        world.put(bros[0], 10, 10);
-        world.put(bros[1], 12, 10);
-        world.put(bros[2], 14, 10);
-        world.put(bros[3], 16, 10);
-        world.put(bros[4], 18, 10);
-        world.put(bros[5], 20, 10);
-        world.put(bros[6], 22, 10);
-
-        BubbleSorter<Calabash> b = new BubbleSorter<>();
-        b.load(bros);
-        b.sort();
-
-        sortSteps = this.parsePlan(b.getPlan());
+        for(int i=0;i<40;i++){
+            for(int j=0;j<40;j++){
+                if(maze[i][j]==0)
+                    world.put(wall, i, j);
+            }
+        }
+        bro = new Calabash(new Color(204, 0, 0), 1, world);
+        world.put(bro, 0, 0);
+         
+        Guide myguide=  new Guide();
+        myguide.load(maze);
+        myguide.findway();
+        moveSteps = this.parsePlan(myguide.getPlan());
+        
     }
 
     private String[] parsePlan(String plan) {
         return plan.split("\n");
     }
 
-    private void execute(Calabash[] bros, String step) {
-        String[] couple = step.split("<->");
-        getBroByRank(bros, Integer.parseInt(couple[0])).swap(getBroByRank(bros, Integer.parseInt(couple[1])));
+    private void execute(Calabash bro, String step) {
+        String[] couple = step.split(",");
+        bro.moveFromTo(bro.getX(),bro.getY(),Integer.parseInt(couple[0]), Integer.parseInt(couple[1]));
     }
 
-    private Calabash getBroByRank(Calabash[] bros, int rank) {
-        for (Calabash bro : bros) {
-            if (bro.getRank() == rank) {
-                return bro;
-            }
-        }
-        return null;
-    }
+ 
 
     @Override
     public void displayOutput(AsciiPanel terminal) {
@@ -77,12 +70,10 @@ public class WorldScreen implements Screen {
 
     @Override
     public Screen respondToUserInput(KeyEvent key) {
-
-        if (i < this.sortSteps.length) {
-            this.execute(bros, sortSteps[i]);
+        if (i < this.moveSteps.length) {
+            this.execute(bro, moveSteps[i]);
             i++;
         }
-
         return this;
     }
 
